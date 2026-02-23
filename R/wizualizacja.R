@@ -1,4 +1,4 @@
-R
+
 
 #' @title Wewnętrzny motyw graficzny
 

@@ -172,7 +172,7 @@ oblicz_wagi_entropii <- function(macierz_decyzyjna) {
 
 }
 
-R
+
 
 #' Rozmyta Metoda TOPSIS
 
@@ -532,6 +532,7 @@ rozmyty_vikor <- function(macierz_decyzyjna, typy_kryteriow, v = 0.5, wagi = NUL
   class(wynik) <- "rozmyty_vikor_wynik"
 
   return(wynik)
+}
 
   #' Rozmyta Metoda WASPAS
 

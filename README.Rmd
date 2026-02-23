@@ -1,23 +1,16 @@
+````markdown
 ---
-
 output: github_document
-
 ---
-
 
 ```{r, include = FALSE}
-
 knitr::opts_chunk$set(
-
-collapse = TRUE,
-
-comment = "#>",
-
-fig.path = "man/figures/README-",
-
-out.width = "100%"
-
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "man/figures/README-",
+  out.width = "100%"
 )
+```
 
 IDEChoiceR
 
@@ -31,7 +24,7 @@ R
 
 # install.packages("devtools")
 
-devtools::install_github("WaszNickNaGithub/NazwaWaszegoPakietu")
+devtools::install_github("sudoKacper/IDEChoiceR")
 
 Szybki Start
 
@@ -39,7 +32,7 @@ Oto podstawowy przykład użycia pakietu z wykorzystaniem wbudowanych danych.
 
 R
 
-library(NazwaWaszegoPakietu)
+library(IDEChoiceR)
 
 
 # 1. Wczytaj dane
