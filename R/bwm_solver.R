@@ -1,136 +1,266 @@
-#' @title Internal BWM Assertions
-#' @description Internal function to validate BWM inputs.
+#' @title Wewnętrzne asercje BWM
+
+#' @description Funkcja pomocnicza do sprawdzania warunków logicznych.
+
 #' @keywords internal
-.assert_bwm <- function(expression, message) {
-  if (!all(expression)) {
-    stop(if (is.null(message)) "Error" else message)
+
+.wymus_bwm <- function(wyrazenie, komunikat) {
+
+  if (!all(wyrazenie)) {
+
+    stop(if (is.null(komunikat)) "Blad" else komunikat)
+
   }
+
 }
 
-#' @title Internal Data Validator
-#' @description Prepares and validates comparison vectors.
-#' @keywords internal
-.validate_bwm_data <- function(best_to_others, others_to_worst, criteria_names) {
-  .assert_bwm(length(best_to_others) > 1, "Length of comparison vectors must be > 1.")
-  .assert_bwm(length(best_to_others) == length(others_to_worst), "Mismatch in vector lengths.")
-  .assert_bwm(length(best_to_others) == length(criteria_names), "Mismatch between criteria names and vectors.")
-  .assert_bwm(1 %in% best_to_others, "'best_to_others' must contain the value 1 (Best).")
-  .assert_bwm(1 %in% others_to_worst, "'others_to_worst' must contain the value 1 (Worst).")
-  .assert_bwm(all(best_to_others >= 1 & best_to_others <= 9), "Scores must be between 1 and 9.")
 
-  list(best_to_others = best_to_others, others_to_worst = others_to_worst, criteria_names = criteria_names)
+#' @title Wewnętrzna walidacja danych
+
+#' @description Sprawdza, czy wektory porównań mają sens (długość, zakres 1-9).
+
+#' @keywords internal
+.waliduj_dane_bwm <- function(najlepsze_do_innych, inne_do_najgorszego, nazwy_kryteriow) {
+
+  .wymus_bwm(length(najlepsze_do_innych) > 1, "Długość wektorów porównań musi być > 1.")
+
+  .wymus_bwm(length(najlepsze_do_innych) == length(inne_do_najgorszego), "Niezgodność długości wektorów.")
+
+  .wymus_bwm(length(najlepsze_do_innych) == length(nazwy_kryteriow), "Liczba kryteriów nie zgadza się z wektorami ocen.")
+
+  .wymus_bwm(1 %in% najlepsze_do_innych, "Wektor 'najlepsze_do_innych' musi zawierać wartość 1 (dla Najlepszego).")
+
+  .wymus_bwm(1 %in% inne_do_najgorszego, "Wektor 'inne_do_najgorszego' musi zawierać wartość 1 (dla Najgorszego).")
+
+  .wymus_bwm(all(najlepsze_do_innych >= 1 & najlepsze_do_innych <= 9), "Oceny muszą być z przedziału 1-9.")
+
+
+  list(best_to_others = najlepsze_do_innych, others_to_worst = inne_do_najgorszego, criteria_names = nazwy_kryteriow)
+
 }
 
-#' @title Internal Consistency Check
-#' @keywords internal
-.check_consistency <- function(model) {
-  worst_idx <- match(1, model$others_to_worst)
-  best_over_worst <- model$best_to_others[worst_idx]
 
-  # a_bj * a_jw = a_bw
+#' @title Wewnętrzne sprawdzanie spójności
+
+#' @keywords internal
+
+.sprawdz_spojnosc <- function(model) {
+
+  indeks_najgorszego <- match(1, model$others_to_worst)
+
+  najlepszy_nad_najgorszym <- model$best_to_others[indeks_najgorszego]
+
+
+  # Sprawdzenie idealnej spojnosci: a_bj * a_jw = a_bw
+
   list(
-    is_consistent = all(model$best_to_others * model$others_to_worst == best_over_worst),
-    a_bw = best_over_worst
+
+    jest_spojny = all(model$best_to_others * model$others_to_worst == najlepszy_nad_najgorszym),
+
+    a_bw = najlepszy_nad_najgorszym
+
   )
+
 }
 
-#' @title Internal Constraint Combiner
+
+#' @title Pomocnik budowania ograniczeń
+
 #' @keywords internal
-.combine_constraints <- function(constraints, new_constraint) {
-  idx <- length(constraints) + 1
-  constraints[[idx]] <- new_constraint
-  list(constraints = constraints, added = TRUE)
+
+.dodaj_ograniczenie <- function(ograniczenia, nowe_ograniczenie) {
+
+  idx <- length(ograniczenia) + 1
+
+  ograniczenia[[idx]] <- nowe_ograniczenie
+
+  list(ograniczenia = ograniczenia, dodano = TRUE)
+
 }
 
-#' @title Calculate BWM Weights
+
+#' Obliczanie wag metodą BWM
+
 #'
-#' @description Calculates criteria weights using the Best-Worst Method (BWM) via Linear Programming.
-#' @param criteria_names Character vector of criteria names.
-#' @param best_to_others Numeric vector (1-9). Preference of Best criterion over others.
-#' @param others_to_worst Numeric vector (1-9). Preference of others over Worst criterion.
-#' @return A list containing `criteria_weights`, `consistency_ratio`, and metadata.
+
+#' @description Wyznacza optymalne wagi kryteriów metodą Best-Worst (BWM) przy użyciu
+
+#' programowania liniowego. Minimalizuje wskaźnik niespójności (ksi).
+
+#'
+
+#' @param nazwy_kryteriow Wektor znakowy z nazwami kryteriów.
+
+#' @param najlepsze_do_innych Wektor numeryczny (1-9). Preferencja Najlepszego kryterium nad innymi.
+
+#' @param inne_do_najgorszego Wektor numeryczny (1-9). Preferencja innych kryteriów nad Najgorszym.
+
+#' @return Lista zawierająca: `wagi_kryteriow`, `wskaznik_spojnosci` (CR) oraz wartość `ksi`.
+
 #' @import Rglpk
+
 #' @export
-calculate_bwm_weights <- function(criteria_names, best_to_others, others_to_worst) {
 
-  # 1. Validation and Model Building
-  data <- .validate_bwm_data(best_to_others, others_to_worst, criteria_names)
-  consistency <- .check_consistency(data)
+oblicz_wagi_bwm <- function(nazwy_kryteriow, najlepsze_do_innych, inne_do_najgorszego) {
 
-  n_vars <- length(best_to_others) + 1 # Weights + ksi
-  ksi_idx <- n_vars
 
-  # Basic Constraints: Sum weights = 1, weights >= 0
-  lhs_sum <- c(rep(1, n_vars - 1), 0)
-  constraints <- list(
-    list(lhs = lhs_sum, dir = "==", rhs = 1)
+  # 1. Walidacja i budowa modelu
+
+  dane <- .waliduj_dane_bwm(najlepsze_do_innych, inne_do_najgorszego, nazwy_kryteriow)
+
+  spojnosc <- .sprawdz_spojnosc(dane)
+
+
+  n_zmiennych <- length(najlepsze_do_innych) + 1 # Wagi (n) + zmienna ksi (1)
+
+  indeks_ksi <- n_zmiennych
+
+
+  # --- Budowanie macierzy ograniczen dla Programowania Liniowego ---
+
+
+  # Ograniczenie 1: Suma wag musi wynosic 1 (w1 + w2 + ... + wn = 1)
+
+  lhs_suma <- c(rep(1, n_zmiennych - 1), 0) # 0 przy ksi, bo ksi nie wchodzi do sumy wag
+
+  ograniczenia <- list(
+
+    list(lhs = lhs_suma, dir = "==", rhs = 1)
+
   )
 
-  # Constraints: |w_b - a_bj * w_j| <= ksi
-  best_idx <- match(1, best_to_others)
 
-  for (j in seq_along(best_to_others)) {
-    if (j != best_idx) {
-      # Equation 1: w_b - a_bj * w_j - ksi <= 0
-      lhs1 <- rep(0, n_vars)
-      lhs1[best_idx] <- 1
-      lhs1[j] <- -best_to_others[j]
-      lhs1[ksi_idx] <- -1
-      constraints <- .combine_constraints(constraints, list(lhs = lhs1, dir = "<=", rhs = 0))$constraints
+  # Ograniczenia wynikajace z porownan: |w_b - a_bj * w_j| <= ksi
 
-      # Equation 2: -w_b + a_bj * w_j - ksi <= 0
+  # Przeksztalcamy wartosc bezwzgledna na dwie nierownosci liniowe
+
+  indeks_najlepszego <- match(1, najlepsze_do_innych)
+
+
+  for (j in seq_along(najlepsze_do_innych)) {
+
+    if (j != indeks_najlepszego) {
+
+      # Rownanie A: w_b - a_bj * w_j - ksi <= 0
+
+      lhs1 <- rep(0, n_zmiennych)
+
+      lhs1[indeks_najlepszego] <- 1
+
+      lhs1[j] <- -najlepsze_do_innych[j]
+
+      lhs1[indeks_ksi] <- -1 # odejmujemy ksi
+
+      ograniczenia <- .dodaj_ograniczenie(ograniczenia, list(lhs = lhs1, dir = "<=", rhs = 0))$ograniczenia
+
+
+      # Rownanie B: -w_b + a_bj * w_j - ksi <= 0
+
       lhs2 <- lhs1 * -1
-      lhs2[ksi_idx] <- -1 # ksi always subtracted
-      constraints <- .combine_constraints(constraints, list(lhs = lhs2, dir = "<=", rhs = 0))$constraints
+
+      lhs2[indeks_ksi] <- -1 # ksi zawsze odejmujemy (zawsze dążymy do minimalizacji bledu)
+
+      ograniczenia <- .dodaj_ograniczenie(ograniczenia, list(lhs = lhs2, dir = "<=", rhs = 0))$ograniczenia
+
     }
+
   }
 
-  # Repeat logic for Others-to-Worst: |w_j - a_jw * w_w| <= ksi
-  worst_idx <- match(1, others_to_worst)
 
-  for (j in seq_along(others_to_worst)) {
-    if (j != worst_idx) {
-      # Equation 1: w_j - a_jw * w_w - ksi <= 0
-      lhs1 <- rep(0, n_vars)
+  # Powtorzenie logiki dla wektora Inne-do-Najgorszego: |w_j - a_jw * w_w| <= ksi
+
+  indeks_najgorszego <- match(1, inne_do_najgorszego)
+
+
+  for (j in seq_along(inne_do_najgorszego)) {
+
+    if (j != indeks_najgorszego) {
+
+      # Rownanie A: w_j - a_jw * w_w - ksi <= 0
+
+      lhs1 <- rep(0, n_zmiennych)
+
       lhs1[j] <- 1
-      lhs1[worst_idx] <- -others_to_worst[j]
-      lhs1[ksi_idx] <- -1
-      constraints <- .combine_constraints(constraints, list(lhs = lhs1, dir = "<=", rhs = 0))$constraints
 
-      # Equation 2: -w_j + a_jw * w_w - ksi <= 0
+      lhs1[indeks_najgorszego] <- -inne_do_najgorszego[j]
+
+      lhs1[indeks_ksi] <- -1
+
+      ograniczenia <- .dodaj_ograniczenie(ograniczenia, list(lhs = lhs1, dir = "<=", rhs = 0))$ograniczenia
+
+
+      # Rownanie B: -w_j + a_jw * w_w - ksi <= 0
+
       lhs2 <- lhs1 * -1
-      lhs2[ksi_idx] <- -1
-      constraints <- .combine_constraints(constraints, list(lhs = lhs2, dir = "<=", rhs = 0))$constraints
+
+      lhs2[indeks_ksi] <- -1
+
+      ograniczenia <- .dodaj_ograniczenie(ograniczenia, list(lhs = lhs2, dir = "<=", rhs = 0))$ograniczenia
+
     }
+
   }
 
-  # 2. Solver Setup
-  mat_lhs <- t(sapply(constraints, function(x) x$lhs))
-  vec_dir <- sapply(constraints, function(x) x$dir)
-  vec_rhs <- unlist(sapply(constraints, function(x) x$rhs))
 
-  # Objective: Minimize ksi
-  objective <- rep(0, n_vars)
-  objective[ksi_idx] <- 1
+  # 2. Konfiguracja Solvera (Rglpk)
 
-  res <- Rglpk::Rglpk_solve_LP(objective, mat_lhs, vec_dir, vec_rhs, max = FALSE)
+  # Zamiana listy ograniczen na macierz
 
-  # 3. Process Results
-  weights <- res$solution[1:(n_vars - 1)]
-  ksi_val <- res$solution[n_vars]
+  macierz_lhs <- t(sapply(ograniczenia, function(x) x$lhs))
 
-  # Consistency Index Table (for 1-9 scale)
-  ci_table <- c(0, 0.44, 1.0, 1.63, 2.30, 3.00, 3.73, 4.47, 5.23)
-  idx_bw <- as.integer(consistency$a_bw)
-  idx_bw <- ifelse(idx_bw > 9, 9, idx_bw) # Safety clip
+  wektor_dir <- sapply(ograniczenia, function(x) x$dir)
 
-  cr <- ksi_val / ci_table[idx_bw]
+  wektor_rhs <- unlist(sapply(ograniczenia, function(x) x$rhs))
+
+
+  # Funkcja celu: Minimalizujemy tylko ksi (ostatnia zmienna)
+
+  cel <- rep(0, n_zmiennych)
+
+  cel[indeks_ksi] <- 1
+
+
+  # Rozwiazanie problemu
+
+  wynik <- Rglpk::Rglpk_solve_LP(cel, macierz_lhs, wektor_dir, wektor_rhs, max = FALSE)
+
+
+  # 3. Przetwarzanie wynikow
+
+  wagi <- wynik$solution[1:(n_zmiennych - 1)]
+
+  wartosc_ksi <- wynik$solution[n_zmiennych]
+
+
+  # Tabela Indeksu Spójności (Consistency Index) dla skali 1-9 (Rezaei, 2015)
+
+  tabela_ci <- c(0, 0.44, 1.0, 1.63, 2.30, 3.00, 3.73, 4.47, 5.23)
+
+
+  # Pobieramy wartosc a_bw (Najlepszy do Najgorszego)
+
+  idx_bw <- as.integer(spojnosc$a_bw)
+
+  idx_bw <- ifelse(idx_bw > 9, 9, idx_bw) # Zabezpieczenie
+
+
+  # Obliczenie Consistency Ratio (CR)
+
+  cr <- wartosc_ksi / tabela_ci[idx_bw]
+
   if (idx_bw == 1) cr <- 0
 
+
   list(
-    criteriaNames = criteria_names,
-    criteriaWeights = weights,
-    consistencyRatio = cr,
-    ksi = ksi_val
+
+    nazwy_kryteriow = nazwy_kryteriow,
+
+    wagi_kryteriow = wagi,
+
+    wskaznik_spojnosci = cr,
+
+    ksi = wartosc_ksi
+
   )
+
 }
