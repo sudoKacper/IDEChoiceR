@@ -1,0 +1,58 @@
+
+IDEChoiceR
+
+Pakiet IDEChoiceR to kompleksowe narzędzie do Wielokryterialnej Analizy
+Decyzyjnej (MCDA) w środowisku rozmytym. Umożliwia pełną ścieżkę
+analityczną: od surowych ankiet, przez wyznaczanie wag metodą BWM
+(Best-Worst Method), aż po rankingi metodami TOPSIS, VIKOR i WASPAS.
+
+Instalacja
+
+Możesz zainstalować wersję deweloperską z serwisu GitHub (po
+opublikowaniu):
+
+R
+
+# install.packages(“devtools”)
+
+devtools::install_github(“sudoKacper/IDEChoiceR”)
+
+Szybki Start
+
+Oto podstawowy przykład użycia pakietu z wykorzystaniem wbudowanych
+danych.
+
+R
+
+library(IDEChoiceR)
+
+# 1. Wczytaj dane
+
+data(“mcda\_
+
+# 2. Przygotuj macierz rozmytą
+
+# Definiujemy, które kolumny tworzą kryteria
+
+skladnia \<- ”
+
+Cost =~ koszt_surowce + koszt_praca;
+
+Quality =~ jakosc_trwalosc + jakosc_defekty
+
+”
+
+macierz \<- przygotuj_dane_mcda(mcda_dane_surowe, skladnia,
+kolumna_alternatyw = “Alternatywa”)
+
+# 3. Oblicz ranking metodą Fuzzy TOPSIS (wagi z Entropii Shannona - automat)
+
+wynik \<- rozmyty_topsis(macierz, typy_kryteriow = c(“min”, “max”))
+
+# 4. Wyświetl wynik
+
+print(wynik\$wyniki)
+
+# 5. Wyświetl mapę decyzyjną
+
+plot(wynik)
