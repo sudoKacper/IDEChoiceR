@@ -1,45 +1,24 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# UnivRankR
+# IDEChoiceR
 
 <!-- badges: start -->
-
-The goal of UnivRankR is to provide advanced Fuzzy Multi-Criteria
-Decision Making (MCDM) methods including VIKOR, TOPSIS, and WASPAS,
-along with state-of-the-art visualizations. It supports both data-driven
-(Entropy) and expert-driven (Best-Worst Method) weighting schemes.
+IDEChoiceR to pakiet języka R wspierający wybór środowiska programistycznego (IDE) z wykorzystaniem metod wielokryterialnej analizy decyzyjnej (MCDA). Implementuje techniki VIKOR i TOPSIS, umożliwiając tworzenie rankingów IDE na podstawie zdefiniowanych kryteriów i wag. Pakiet pozwala na obiektywne porównanie alternatyw oraz wspiera podejmowanie świadomych decyzji wyboru narzędzia programistycznego.
 <!-- badges: end -->
 
-The goal of UnivRankR is to …
+Celem IDEChoicer jest...
 
-## Installation
+## Instalacja
 
-You can install the development version of UnivRankR from
-[GitHub](https://github.com/) with:
+Wersja deweloperska z GitHuba:
 
-``` r
-# install.packages("devtools")
-devtools::install_github("MarekDejaUJ/UnivRankR")
-#> Using GitHub PAT from the git credential store.
-#> Downloading GitHub repo MarekDejaUJ/UnivRankR@HEAD
-#> isoband (0.2.7 -> 0.3.0) [CRAN]
-#> Installing 1 packages: isoband
-#> Installing package into '/private/var/folders/vh/njwnyy0141n0zbrgjw2vbz800000gn/T/RtmpsGQMJx/temp_libpath43d56c5bbdb3'
-#> (as 'lib' is unspecified)
-#> 
-#> The downloaded binary packages are in
-#>  /var/folders/vh/njwnyy0141n0zbrgjw2vbz800000gn/T//RtmpMHUCiB/downloaded_packages
-#> ── R CMD build ─────────────────────────────────────────────────────────────────
-#> * checking for file ‘/private/var/folders/vh/njwnyy0141n0zbrgjw2vbz800000gn/T/RtmpMHUCiB/remotes464a1866f3c8/MarekDejaUJ-UnivRankR-009fab4/DESCRIPTION’ ... OK
-#> * preparing ‘UnivRankR’:
-#> * checking DESCRIPTION meta-information ... OK
-#> * checking for LF line-endings in source and make files and shell scripts
-#> * checking for empty or unneeded directories
-#> * building ‘UnivRankR_0.2.2.tar.gz’
-#> Installing package into '/private/var/folders/vh/njwnyy0141n0zbrgjw2vbz800000gn/T/RtmpsGQMJx/temp_libpath43d56c5bbdb3'
-#> (as 'lib' is unspecified)
+```r
+install.packages("devtools")
+devtools::install_github("sudoKacper/IDEChoiceR")
 ```
+
+---
 
 ## Example
 
