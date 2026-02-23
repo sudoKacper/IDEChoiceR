@@ -13,22 +13,24 @@ knitr::opts_chunk$set(
 )
 ```
 
-# UnivRankR
+# IDEChoiceR
 
 <!-- badges: start -->
-The goal of UnivRankR is to provide advanced Fuzzy Multi-Criteria Decision Making (MCDM) methods including VIKOR, TOPSIS, and WASPAS, along with state-of-the-art visualizations. It supports both data-driven (Entropy) and expert-driven (Best-Worst Method) weighting schemes.
+IDEChoiceR to pakiet języka R wspierający wybór środowiska programistycznego (IDE) z wykorzystaniem metod wielokryterialnej analizy decyzyjnej (MCDA). Implementuje techniki VIKOR i TOPSIS, umożliwiając tworzenie rankingów IDE na podstawie zdefiniowanych kryteriów i wag. Pakiet pozwala na obiektywne porównanie alternatyw oraz wspiera podejmowanie świadomych decyzji wyboru narzędzia programistycznego.
 <!-- badges: end -->
 
-The goal of UnivRankR is to ...
+Celem IDEChoicer jest...
 
-## Installation
+## Instalacja
 
-You can install the development version of UnivRankR from [GitHub](https://github.com/) with:
+Wersja deweloperska z GitHuba:
 
-```{r}
-# install.packages("devtools")
-devtools::install_github("MarekDejaUJ/UnivRankR")
+```r
+install.packages("devtools")
+devtools::install_github("sudoKacper/IDEChoiceR")
 ```
+
+---
 
 ## Example
 
